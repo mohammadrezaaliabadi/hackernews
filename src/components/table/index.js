@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Button } from "../button";
 import { sortBy } from "lodash";
 import "./index.css";
+import classNames from "classnames";
 
 const SORTS = {
   NONE: (list) => list,
@@ -13,12 +14,11 @@ const SORTS = {
 };
 
 const Sort = ({ sortKey, activeSortKey, onSort, children }) => {
-  const sortClass = ["button-inline"];
-  if (sortKey === activeSortKey) {
-    sortClass.push("button-active");
-  }
+  const sortClass = classNames("button-inline", {
+    "button-active": sortKey === activeSortKey,
+  });
   return (
-    <Button onClick={() => onSort(sortKey)} className={sortClass.join(" ")}>
+    <Button onClick={() => onSort(sortKey)} className={sortClass}>
       {children}
     </Button>
   );
