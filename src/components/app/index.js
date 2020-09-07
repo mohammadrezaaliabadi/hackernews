@@ -13,7 +13,20 @@ import Search from "../search";
 import Table from "../table";
 import { Button } from "../button";
 import "./index.css";
+const Loading = () => (
+  <div className="interactions">
+    <p>Loading...</p>
+  </div>
+);
 
+const Error = () => (
+  <div className="interactions">
+    <p>Something went wrong.</p>
+  </div>
+);
+const withLoading = (Component) => ({ isLoading, ...props }) =>
+  isLoading ? <Loading /> : <Component {...props} />;
+const ButtonWithLoading = withLoading(Button);
 class App extends Component {
   _isMounted = false;
   constructor(props) {
@@ -23,6 +36,7 @@ class App extends Component {
       searchKey: "",
       searchTerm: DEFAULT_QUERY,
       error: null,
+      isLoading: false,
     };
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
@@ -37,6 +51,7 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
+    this.setState({ isLoading: true });
     axios(
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`
     )
@@ -63,6 +78,7 @@ class App extends Component {
     const updatedHits = [...oldHits, ...hits];
     this.setState({
       results: { ...results, [searchKey]: { hits: updatedHits, page } },
+      isLoading: false,
     });
   }
 
@@ -87,7 +103,7 @@ class App extends Component {
     });
   }
   render() {
-    const { results, searchKey, searchTerm, error } = this.state;
+    const { results, searchKey, searchTerm, error, isLoading } = this.state;
     const page =
       (results && results[searchKey] && results[searchKey].page) || 0;
     const list =
@@ -104,9 +120,7 @@ class App extends Component {
           </Search>
         </div>
         {error ? (
-          <div className="interactions">
-            <p>Something went wrong.</p>
-          </div>
+          <Error />
         ) : (
           <Table
             list={list}
@@ -115,11 +129,12 @@ class App extends Component {
           />
         )}
         <div className="interactions">
-          <Button
+          <ButtonWithLoading
+            isLoading={isLoading}
             onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
           >
             More
-          </Button>
+          </ButtonWithLoading>
         </div>
       </div>
     );
